@@ -3,6 +3,7 @@ create extension if not exists postgis;
 
 create type order_source as enum ('manual', 'import');
 create type tax_calc_status as enum ('calculated', 'review', 'failed');
+create type jurisdiction_type as enum ('county', 'city');
 
 
 create table imports(
@@ -50,32 +51,16 @@ create index idx_orders_ordered_dt_id on orders(ordered_dt desc, id desc);
 create index idx_orders_delivery_geom on orders using gist (delivery_geom);
 
 
-create table geo_counties(
+create table geo_boundaries(
     id bigserial primary key,
+    name text not null,
+    type jurisdiction_type not null,
+    geom geometry(MultiPolygon, 4326) not null,
 
-    county_name text not null unique,
-    geom geometry(MultiPolygon, 4326) not null
+    unique (name, type)
 );
 
-create index idx_geo_counties_geom on geo_counties using gist (geom);
-
-
-create table geo_cities(
-    id bigserial primary key,
-
-    city_name text not null,
-    county_name text null,
-    geom geometry(MultiPolygon, 4326) not null
-);
-
-create index idx_geo_cities_geom on geo_cities using gist (geom);
-create index idx_geo_cities_name on geo_cities(city_name);
-create index idx_geo_cities_county_name on geo_cities(county_name);
-
-
-create table mctd_counties(
-    county_name text primary key
-);
+create index idx_geo_boundaries_geom on geo_boundaries using gist (geom);
 
 
 create table order_taxes(
