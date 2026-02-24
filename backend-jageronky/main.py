@@ -9,4 +9,4 @@ app.include_router(orders_router, prefix="/orders")
 
 @app.get("/")
 async def root():
-    return {"message": "123"}
+    return {"message": "jageronky uoy!"}
