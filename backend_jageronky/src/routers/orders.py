@@ -1,8 +1,10 @@
-from fastapi import APIRouter, UploadFile, Depends, File
+from fastapi import APIRouter, UploadFile, Depends, File, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.db.session import get_db
 from src.schemas import OrderCreate, OrderOut, OrdersQuery, OrdersListOut
+from src.services.jurisdiction_service import JurisdictionService
+from src.services.orders import create_order
 
 router = APIRouter()
 
@@ -14,13 +16,14 @@ async def import_orders(
 ):
     pass
 
-
 @router.post("", response_model=OrderOut)
 async def create_orders(
         dto: OrderCreate,
+        request: Request,
         db: AsyncSession = Depends(get_db)
 ):
-    pass
+    tax_data = request.app.state.tax_data
+    return await create_order(db, dto, tax_data)
 
 
 @router.get("", response_model=OrdersListOut)
