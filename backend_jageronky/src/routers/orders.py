@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.db.session import get_db
 from src.schemas import OrderCreate, OrderOut, OrdersQuery, OrdersListOut
 from src.services.jurisdiction_service import JurisdictionService
-from src.services.orders import create_order
+from src.services.orders import create_order, list_orders
 
 router = APIRouter()
 
@@ -31,4 +31,5 @@ async def get_orders(
         query: OrdersQuery = Depends(),
         db: AsyncSession = Depends(get_db)
 ):
-    return OrdersListOut(items=[], total=0, limit=0, offset=0)
+    items, total = await list_orders(db=db, limit=query.limit, offset=query.offset)
+    return OrdersListOut(items=items, total=total, limit=query.limit, offset=query.offset)

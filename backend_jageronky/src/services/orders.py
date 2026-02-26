@@ -95,3 +95,65 @@ async def create_order(db: AsyncSession, dto: OrderCreate, tax_data: dict):
         },
         "jurisdictions": row["jurisdictions"],
     }
+
+
+async def list_orders(
+    db: AsyncSession,
+    limit: int,
+    offset: int,
+):
+    total_result = await db.execute(
+        text("SELECT COUNT(*) FROM orders")
+    )
+    total = total_result.scalar_one()
+
+    result = await db.execute(
+        text("""
+            SELECT
+                o.id,
+                o.latitude,
+                o.longitude,
+                o.subtotal,
+                o.ordered_dt AS timestamp,
+                t.composite_tax_rate,
+                t.tax_amount,
+                t.total_amount,
+                t.state_rate,
+                t.county_rate,
+                t.city_rate,
+                t.special_rates,
+                t.jurisdictions
+            FROM orders o
+            JOIN order_taxes t 
+            ON t.order_id = o.id
+            AND t.status = 'calculated'
+            ORDER BY o.id DESC
+            LIMIT :limit OFFSET :offset
+        """),
+        {"limit": limit, "offset": offset},
+    )
+
+    rows = result.mappings().all()
+
+    items = []
+
+    for row in rows:
+        items.append({
+            "id": row["id"],
+            "latitude": float(row["latitude"]),
+            "longitude": float(row["longitude"]),
+            "subtotal": float(row["subtotal"]),
+            "timestamp": row["timestamp"],
+            "composite_tax_rate": float(row["composite_tax_rate"]),
+            "tax_amount": float(row["tax_amount"]),
+            "total_amount": float(row["total_amount"]),
+            "breakdown": {
+                "state_rate": float(row["state_rate"]),
+                "county_rate": float(row["county_rate"]),
+                "city_rate": float(row["city_rate"]),
+                "special_rates": row["special_rates"] or []
+            },
+            "jurisdictions": row["jurisdictions"],
+        })
+
+    return items, total
