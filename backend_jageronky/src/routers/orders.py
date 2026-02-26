@@ -1,20 +1,39 @@
+import csv
+from _datetime import datetime
+import io
+import hashlib
+from decimal import Decimal
+
 from fastapi import APIRouter, UploadFile, Depends, File, Request
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.db.session import get_db
 from src.schemas import OrderCreate, OrderOut, OrdersQuery, OrdersListOut
 from src.services.jurisdiction_service import JurisdictionService
 from src.services.orders import create_order, list_orders
+from src.services.tax_calculator import TaxCalculationService
+from src.services.import_orders import ImportService
 
 router = APIRouter()
 
 
 @router.post("/import")
 async def import_orders(
+        request: Request,
         file: UploadFile = File(...),
         db: AsyncSession = Depends(get_db)
 ):
-    pass
+        tax_data = request.app.state.tax_data
+        service = ImportService(tax_data)
+
+        content = await file.read()
+
+        return await service.import_orders(
+            db=db,
+            file_name=file.filename,
+            file_bytes=content,
+        )
 
 @router.post("", response_model=OrderOut)
 async def create_orders(
