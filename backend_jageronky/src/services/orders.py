@@ -118,7 +118,7 @@ async def list_orders(
     offset: int,
 ):
     total_result = await db.execute(
-        text("SELECT COUNT(*) FROM orders")
+        text("SELECT COUNT(*) FROM orders o JOIN order_taxes t ON t.order_id = o.id AND t.status = 'calculated'")
     )
     total = total_result.scalar_one()
 

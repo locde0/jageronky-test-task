@@ -1,6 +1,9 @@
 import { useState } from 'react'
-import Threads from './Threads'
+import Threads from './background/Threads'
 import { getOrders } from './api'
+import CreateOrder from './services/CreateOrder'
+import ImportCsv from './services/ImportCsv'
+import OrdersList from './services/OrdersList'
 import './App.css'
 
 function App() {
@@ -18,35 +21,22 @@ function App() {
     }
   }
 
-  const handleCreateSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-  }
-
   return (
     <div className="app-wrap">
       <div className="app-background">
         <Threads color={[251/255, 157/255, 81/255]} amplitude={1} enableMouseInteraction />
       </div>
       <div className={`app-content ${apiPanelOpen ? 'app-content-dimmed' : ''}`}>
-        <h1>Jageronky test task - Адмінка</h1>
+        <h1>Instant Wellness — Tax Admin</h1>
         <div className="app-nav-buttons">
-          <button onClick={() => setActiveTab('import')}>Import csv</button>
-          <button onClick={() => setActiveTab('create')}>Create order</button>
-          <button onClick={() => setActiveTab('list')}>Orders list</button>
+          <button className={activeTab === 'import' ? 'tab-active' : ''} onClick={() => setActiveTab('import')}>Import csv</button>
+          <button className={activeTab === 'create' ? 'tab-active' : ''} onClick={() => setActiveTab('create')}>Create order</button>
+          <button className={activeTab === 'list' ? 'tab-active' : ''} onClick={() => setActiveTab('list')}>Orders list</button>
         </div>
 
-        {activeTab === 'import' && <p>Тут буде завантаження CSV</p>}
-
-        {activeTab === 'create' && (
-          <form onSubmit={handleCreateSubmit}>
-            <input type="number" placeholder="Latitude" /><br />
-            <input type="number" placeholder="Longitude" /><br />
-            <input type="number" placeholder="Subtotal" /><br />
-            <button type="submit">Створити</button>
-          </form>
-        )}
-
-        {activeTab === 'list' && <p>Тут буде таблиця замовлень</p>}
+        {activeTab === 'import' && <ImportCsv />}
+        {activeTab === 'create' && <CreateOrder />}
+        {activeTab === 'list' && <OrdersList />}
       </div>
 
       <button
@@ -63,10 +53,7 @@ function App() {
 
       {apiPanelOpen && (
         <>
-          <div
-            className="api-panel-overlay"
-            aria-hidden
-          />
+          <div className="api-panel-overlay" aria-hidden />
           <aside className="api-panel">
             <div className="api-panel-header">
               <h2 className="api-panel-title">Перевірка API</h2>
