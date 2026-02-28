@@ -101,22 +101,6 @@ After startup:
 
 ---
 
-## What Docker Starts
-
-The Docker setup is intended to start the full local environment:
-
-- `db` - PostgreSQL with PostGIS
-- `db-seed` - initializes schema and loads geospatial boundary data
-- `backend` - FastAPI application
-- `frontend` - React application
-
-The `db-seed` service is responsible for:
-1. applying `schema.sql`,
-2. importing boundary shapefiles into raw tables,
-3. running `transform_boundaries.sql` to populate the final boundary tables used by the application.
-
----
-
 ## Environment Variables
 
 Typical environment variables used by the backend and Docker setup:
@@ -129,7 +113,7 @@ DB_USER=postgres
 DB_PASSWORD=postgres
 ```
 
-Inside Docker Compose, the backend usually connects to the database service by container name, for example `db`.
+Inside Docker Compose, the backend usually connects to the database service by container name.
 
 If the backend is run outside Docker, `DB_HOST=localhost` is typically used.
 
