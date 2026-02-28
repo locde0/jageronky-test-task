@@ -1,89 +1,61 @@
-import { useState } from 'react'
-import Threads from './background/Threads'
+import { useState, useEffect, useCallback } from 'react'
 import { getOrders } from './api'
-import CreateOrder from './services/CreateOrder'
-import ImportCsv from './services/ImportCsv'
-import OrdersList from './services/OrdersList'
+import type { Order } from './api'
+import Sidebar from './components/Sidebar'
+import Topbar from './components/Topbar'
+import MapView from './components/MapView'
+import OrdersPanel from './components/OrdersPanel'
+import CreateDrawer from './components/CreateDrawer'
+import ImportDrawer from './components/ImportDrawer'
 import './App.css'
 
-function App() {
-  const [activeTab, setActiveTab] = useState<'import' | 'create' | 'list'>('create')
-  const [apiPanelOpen, setApiPanelOpen] = useState(false)
-  const [apiTest, setApiTest] = useState<{ status: 'idle' | 'loading' | 'ok' | 'error'; message: string }>({ status: 'idle', message: '' })
+type View = 'map' | 'orders' | 'import'
+type Drawer = 'create' | 'import' | null
 
-  const handleTestApi = async () => {
-    setApiTest({ status: 'loading', message: '...' })
+const PAGE_SIZE = 100
+
+function App() {
+  const [orders, setOrders] = useState<Order[]>([])
+  const [ordersTotal, setOrdersTotal] = useState(0)
+  const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null)
+  const [activeView, setActiveView] = useState<View>('map')
+  const [drawer, setDrawer] = useState<Drawer>(null)
+
+  const loadOrders = useCallback(async () => {
     try {
-      const data = await getOrders({ limit: 5, offset: 0 })
-      setApiTest({ status: 'ok', message: `GET /orders ок: отримано ${data.items.length} з ${data.total}` })
-    } catch (err) {
-      setApiTest({ status: 'error', message: err instanceof Error ? err.message : 'Помилка' })
-    }
+      const data = await getOrders({ limit: PAGE_SIZE, offset: 0 })
+      setOrders(data.items)
+      setOrdersTotal(data.total)
+    } catch { /* silent */ }
+  }, [])
+
+  useEffect(() => { loadOrders() }, [loadOrders])
+
+  const handleCreated = (order: Order) => {
+    setOrders(prev => [order, ...prev])
+    setOrdersTotal(prev => prev + 1)
+    setSelectedOrderId(order.id)
+  }
+
+  const handleImported = () => { loadOrders() }
+
+  const handleNavigate = (view: View) => {
+    if (view === 'import') { setDrawer('import'); return }
+    setActiveView(view)
   }
 
   return (
-    <div className="app-wrap">
-      <div className="app-background">
-        <Threads color={[251/255, 157/255, 81/255]} amplitude={1} enableMouseInteraction />
-      </div>
-      <div className={`app-content ${apiPanelOpen ? 'app-content-dimmed' : ''}`}>
-        <h1>Instant Wellness — Tax Admin</h1>
-        <div className="app-nav-buttons">
-          <button className={activeTab === 'import' ? 'tab-active' : ''} onClick={() => setActiveTab('import')}>Import csv</button>
-          <button className={activeTab === 'create' ? 'tab-active' : ''} onClick={() => setActiveTab('create')}>Create order</button>
-          <button className={activeTab === 'list' ? 'tab-active' : ''} onClick={() => setActiveTab('list')}>Orders list</button>
+    <div className="shell">
+      <Sidebar activeView={activeView} orderCount={ordersTotal} onNavigate={handleNavigate} />
+      <div className="main">
+        <Topbar orders={orders} onOpenDrawer={setDrawer} />
+        <div className="content">
+          <MapView orders={orders} selectedOrderId={selectedOrderId} onSelectOrder={setSelectedOrderId} />
+          <OrdersPanel orders={orders} total={ordersTotal} selectedId={selectedOrderId} onSelect={setSelectedOrderId} />
         </div>
-
-        {activeTab === 'import' && <ImportCsv />}
-        {activeTab === 'create' && <CreateOrder />}
-        {activeTab === 'list' && <OrdersList />}
       </div>
-
-      <button
-        type="button"
-        className="api-fab"
-        onClick={() => setApiPanelOpen(true)}
-        title="Перевірка API"
-      >
-        <svg className="api-fab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z" />
-          <path d="M19.6224 10.3954L18.5247 7.7448L20 6L18 4L16.2647 5.48295L13.5578 4.36974L12.9353 2H10.981L10.3491 4.40113L7.70441 5.51596L6 4L4 6L5.45337 7.78885L4.3725 10.4463L2 11V13L4.40111 13.6555L5.51575 16.2997L4 18L6 20L7.79116 18.5403L10.397 19.6123L11 22H13L13.6045 19.6132L16.2551 18.5155C16.6969 18.8313 18 20 18 20L20 18L18.5159 16.2494L19.6139 13.598L21.9999 12.9772L22 11L19.6224 10.3954Z" />
-        </svg>
-      </button>
-
-      {apiPanelOpen && (
-        <>
-          <div className="api-panel-overlay" aria-hidden />
-          <aside className="api-panel">
-            <div className="api-panel-header">
-              <h2 className="api-panel-title">Перевірка API</h2>
-              <button
-                type="button"
-                className="api-panel-close"
-                onClick={() => setApiPanelOpen(false)}
-                aria-label="Закрити"
-              >
-                <span className="api-panel-close-x">×</span>
-              </button>
-            </div>
-            <div className="api-panel-body">
-              <button
-                type="button"
-                className="api-panel-check-btn"
-                onClick={handleTestApi}
-                disabled={apiTest.status === 'loading'}
-              >
-                {apiTest.status === 'loading' ? 'Перевірка...' : 'Перевірити API (GET /orders)'}
-              </button>
-              {apiTest.status !== 'idle' && (
-                <p className={`api-panel-result api-panel-result--${apiTest.status}`}>
-                  {apiTest.message}
-                </p>
-              )}
-            </div>
-          </aside>
-        </>
-      )}
+      <CreateDrawer open={drawer === 'create'} onClose={() => setDrawer(null)} onCreated={handleCreated} />
+      <ImportDrawer open={drawer === 'import'} onClose={() => setDrawer(null)} onImported={handleImported} />
     </div>
   )
 }
