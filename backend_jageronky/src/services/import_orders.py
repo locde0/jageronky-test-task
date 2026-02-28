@@ -118,6 +118,7 @@ class ImportService:
                 'file_hash': file_hash,
             },
         )
+        await self._db.commit()
         return result.scalar_one()
 
     @staticmethod
