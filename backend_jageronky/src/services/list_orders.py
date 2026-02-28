@@ -11,7 +11,7 @@ class ListOrdersService:
         self,
         limit: int,
         offset: int,
-    ) -> tuple[list[dict], int]:
+    ) -> tuple[list, int]:
         total = await self._count_orders()
         items = await self._fetch_orders(limit=limit, offset=offset)
         return items, total

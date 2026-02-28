@@ -1,5 +1,4 @@
-from fastapi import APIRouter, UploadFile, Depends, File, Request
-from sqlalchemy import text
+from fastapi import APIRouter, UploadFile, Depends, File
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.tax_config import TaxConfig
