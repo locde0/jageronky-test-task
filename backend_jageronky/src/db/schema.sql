@@ -46,7 +46,6 @@ create index idx_orders_subtotal on orders(subtotal);
 create index idx_orders_source on orders(source);
 create index idx_orders_import_id on orders(import_id);
 create index idx_orders_ordered_dt_id on orders(ordered_dt desc, id desc);
-create index idx_orders_delivery_geom on orders using gist (delivery_geom);
 
 
 create table geo_boundaries(
