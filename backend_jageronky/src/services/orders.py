@@ -43,7 +43,7 @@ async def create_order(db: AsyncSession, dto: OrderCreate, tax_data: dict):
         latitude=dto.latitude,
         longitude=dto.longitude,
         subtotal=dto.subtotal,
-   )
+    )
     await db.commit()
 
     check = await db.execute(

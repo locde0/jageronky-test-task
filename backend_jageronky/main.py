@@ -2,14 +2,15 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from contextlib import asynccontextmanager
+
 from src.routers.orders import router as orders_router
-from src.services.tax_loader import load_tax_data
+from src.core.tax_config import TaxConfig
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("startup logic here")
-    app.state.tax_data = load_tax_data()
+    app.state.tax_config = TaxConfig("data/tax_rates.json")
 
     yield
 
@@ -28,7 +29,6 @@ CORS_HEADERS = {
 
 @app.exception_handler(Exception)
 async def unhandled_exception_handler(request, exc: Exception):
-    """Повертає JSON з помилкою; CORS-заголовки вручну, щоб браузер не блокував відповідь."""
     return JSONResponse(
         status_code=503,
         content={"detail": "Service temporarily unavailable (e.g. database not running).", "error": str(exc)},

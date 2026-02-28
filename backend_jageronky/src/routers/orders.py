@@ -8,7 +8,9 @@ from fastapi import APIRouter, UploadFile, Depends, File, Request
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from core.tax_config import TaxConfig
 from src.db.session import get_db
+from src.core.deps import get_tax_config
 from src.schemas import OrderCreate, OrderOut, OrdersQuery, OrdersListOut
 from src.services.jurisdiction_service import JurisdictionService
 from src.services.orders import create_order, list_orders
@@ -20,16 +22,14 @@ router = APIRouter()
 
 @router.post("/import")
 async def import_orders(
-        request: Request,
         file: UploadFile = File(...),
+        tax_config: TaxConfig = Depends(get_tax_config),
         db: AsyncSession = Depends(get_db)
 ):
-        tax_data = request.app.state.tax_data
-        service = ImportService(tax_data)
-
         content = await file.read()
 
-        return await service.import_orders(
+        return await ImportService.import_orders(
+            tax_config=tax_config,
             db=db,
             file_name=file.filename,
             file_bytes=content,
@@ -38,11 +38,10 @@ async def import_orders(
 @router.post("", response_model=OrderOut)
 async def create_orders(
         dto: OrderCreate,
-        request: Request,
+        tax_config: TaxConfig = Depends(get_tax_config),
         db: AsyncSession = Depends(get_db)
 ):
-    tax_data = request.app.state.tax_data
-    return await create_order(db, dto, tax_data)
+    return await create_order(tax_config, db, dto)
 
 
 @router.get("", response_model=OrdersListOut)

@@ -6,6 +6,8 @@ create type tax_calc_status as enum ('calculated', 'review', 'failed');
 create type jurisdiction_type as enum ('county', 'city');
 
 
+select count(*) from geo_boundaries;
+
 create table imports(
     id bigserial primary key,
 

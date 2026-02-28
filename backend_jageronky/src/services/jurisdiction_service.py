@@ -4,22 +4,24 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 class JurisdictionService:
 
-    async def resolve_county(
-        self,
+    @staticmethod
+    async def resolve(
         db: AsyncSession,
         latitude: float,
         longitude: float,
-    ) -> str | None:
+    ) -> tuple[str, str] | None:
 
         query = text("""
-            SELECT name
+            SELECT 
+                MAX(name) FILTER (WHERE type = 'county') AS county_name,
+                MAX(name) FILTER (WHERE type = 'city') AS city_name
             FROM geo_boundaries
-            WHERE type = 'county'
-              AND st_contains(
+            WHERE 
+                type IN ('county', 'city')
+                AND st_covers(
                     geom,
                     st_setsrid(st_makepoint(:lon, :lat), 4326)
-                  )
-            limit 1
+                )
         """)
 
         result = await db.execute(
@@ -28,4 +30,7 @@ class JurisdictionService:
         )
 
         row = result.fetchone()
-        return row[0] if row else None
+        if row and (row.county_name or row.city_name):
+            return row.county_name, row.city_name
+
+        return None
