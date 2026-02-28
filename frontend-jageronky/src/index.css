@@ -24,6 +24,7 @@ body {
   font-family: var(--mono);
   height: 100vh;
   overflow: hidden;
+  color-scheme: dark;
 }
 
 body::before {

@@ -59,6 +59,24 @@
 }
 .form-input:focus { border-color: var(--border2); }
 .form-input::placeholder { color: var(--text-dim); }
+.form-input::-webkit-outer-spin-button,
+.form-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.form-input[type="number"] { -moz-appearance: textfield; }
+
+/* Date/time picker dark warm theme */
+.form-input::-webkit-calendar-picker-indicator {
+  filter: invert(0.7) sepia(0.5) hue-rotate(-10deg) saturate(0.6);
+  cursor: pointer;
+}
+::-webkit-datetime-edit { color: var(--text); }
+::-webkit-datetime-edit-fields-wrapper { color: var(--text); }
+::-webkit-datetime-edit-text { color: var(--text-dim); }
+::-webkit-datetime-edit-month-field,
+::-webkit-datetime-edit-day-field,
+::-webkit-datetime-edit-year-field,
+::-webkit-datetime-edit-hour-field,
+::-webkit-datetime-edit-minute-field,
+::-webkit-datetime-edit-ampm-field { color: var(--text); }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
 /* Tax preview */
