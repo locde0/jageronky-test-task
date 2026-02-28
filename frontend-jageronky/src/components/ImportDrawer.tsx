@@ -1,7 +1,6 @@
 import { useState, useRef, useCallback } from 'react'
 import { importOrders } from '../api'
 import { isImportSuccess } from '../api/types'
-import type { ImportResponse } from '../api'
 import './Drawer.css'
 
 interface Props {
