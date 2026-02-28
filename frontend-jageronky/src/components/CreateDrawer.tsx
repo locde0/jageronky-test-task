@@ -24,9 +24,10 @@ export default function CreateDrawer({ open, onClose, onCreated }: Props) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  const latN = parseFloat(lat)
-  const lonN = parseFloat(lon)
-  const subN = parseFloat(sub)
+  const toNum = (s: string) => parseFloat(s.replace(',', '.'))
+  const latN = toNum(lat)
+  const lonN = toNum(lon)
+  const subN = toNum(sub)
 
   const handleSubmit = async () => {
     if (!latN || !lonN || !subN) { setError('Fill all fields'); return }
@@ -66,16 +67,16 @@ export default function CreateDrawer({ open, onClose, onCreated }: Props) {
               <div className="form-row">
                 <div className="form-group">
                   <label className="form-label">Latitude</label>
-                  <input className="form-input" placeholder="40.7128" type="number" step="0.0001" value={lat} onChange={e => setLat(e.target.value)} />
+                  <input className="form-input" placeholder="40.7128" type="text" inputMode="decimal" value={lat} onChange={e => setLat(e.target.value)} />
                 </div>
                 <div className="form-group">
                   <label className="form-label">Longitude</label>
-                  <input className="form-input" placeholder="-74.0059" type="number" step="0.0001" value={lon} onChange={e => setLon(e.target.value)} />
+                  <input className="form-input" placeholder="-74.0059" type="text" inputMode="decimal" value={lon} onChange={e => setLon(e.target.value)} />
                 </div>
               </div>
               <div className="form-group">
                 <label className="form-label">Subtotal ($)</label>
-                <input className="form-input" placeholder="49.99" type="number" step="0.01" value={sub} onChange={e => setSub(e.target.value)} />
+                <input className="form-input" placeholder="49.99" type="text" inputMode="decimal" value={sub} onChange={e => setSub(e.target.value)} />
               </div>
               <div className="form-group">
                 <label className="form-label">Date / Time</label>

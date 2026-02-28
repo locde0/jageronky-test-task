@@ -18,11 +18,17 @@ export default function OrdersPanel({ orders, total, selectedId, onSelect }: Pro
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase()
-    let list = orders.filter(o =>
-      String(o.id).includes(q) ||
-      o.latitude.toString().includes(q) ||
-      o.longitude.toString().includes(q)
-    )
+    let list = orders.filter(o => {
+      const j = o.jurisdictions
+      const jText = [j?.state, j?.county, j?.city, ...(j?.special ?? [])].filter(Boolean).join(' ').toLowerCase()
+      return (
+        String(o.id).includes(q) ||
+        o.latitude.toString().includes(q) ||
+        o.longitude.toString().includes(q) ||
+        o.subtotal.toString().includes(q) ||
+        jText.includes(q)
+      )
+    })
     if (sort === 'highest') list = [...list].sort((a, b) => b.composite_tax_rate - a.composite_tax_rate)
     else if (sort === 'lowest') list = [...list].sort((a, b) => a.total_amount - b.total_amount)
     return list
@@ -43,7 +49,7 @@ export default function OrdersPanel({ orders, total, selectedId, onSelect }: Pro
       <div className="filter-row">
         <input
           className="filter-input"
-          placeholder="Search…"
+          placeholder="ID, county, city…"
           value={search}
           onChange={e => { setSearch(e.target.value); setPage(1) }}
         />
