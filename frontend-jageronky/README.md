@@ -1,7 +1,23 @@
+```
+winget install OpenJS.NodeJS.LTS
+```
+```
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+```
+```
+node -v
+npm -v
+```
+```
 cd c:\Users\Artem\Documents\hakaton\jageronky-test-task\frontend-jageronky
+```
+```
 npm install
+```
+```
 npm run dev
-
+Ctrl c
+```
 
 
 
