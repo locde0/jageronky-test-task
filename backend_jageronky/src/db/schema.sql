@@ -2,11 +2,9 @@ create extension if not exists postgis;
 
 
 create type order_source as enum ('manual', 'import');
-create type tax_calc_status as enum ('calculated', 'review', 'failed');
+create type tax_calc_status as enum ('calculated', 'failed');
 create type jurisdiction_type as enum ('county', 'city');
 
-
-select count(*) from geo_boundaries;
 
 create table imports(
     id bigserial primary key,
@@ -25,18 +23,16 @@ create table orders(
 
     source order_source not null,
     import_id bigint null references imports(id) on delete set null,
-    source_order_id bigint null unique,
+    source_order_id bigint null,
 
     latitude double precision not null check (-90 <= latitude and latitude <= 90),
     longitude double precision not null check (-180 <= longitude and longitude <= 180),
-    delivery_geom geometry(Point, 4326) generated always as (
-        st_setsrid(st_makepoint(longitude, latitude), 4326)
-    ) stored,
 
     subtotal numeric(12,2) not null check (subtotal >= 0),
     ordered_dt timestamptz not null,
     created_dt timestamptz not null default now(),
 
+    unique (import_id, source_order_id),
     check (
         (source = 'import' and import_id is not null) or (source = 'manual' and import_id is null)
     ),
@@ -69,7 +65,7 @@ create table order_taxes(
     id bigserial primary key,
 
     order_id bigint not null unique references orders(id) on delete cascade,
-    status tax_calc_status not null default 'review',
+    status tax_calc_status not null default 'failed',
 
     composite_tax_rate numeric(9,6) null check (composite_tax_rate >= 0),
 
@@ -80,10 +76,7 @@ create table order_taxes(
     county_rate numeric(9,6) null check (county_rate >= 0),
     city_rate numeric(9,6) null check (city_rate >= 0),
 
-    -- [{"code":"MCTD","rate":0.00375}]
     special_rates jsonb not null default '[]'::jsonb,
-
-    -- {"state":{"code":"NY"},"county":{"name":"Kings"},"city":{"name":"New York"},"special":[{"code":"MCTD"}]}
     jurisdictions jsonb not null,
 
     calculated_dt timestamptz not null default now(),

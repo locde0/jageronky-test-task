@@ -1,20 +1,13 @@
-import csv
-from _datetime import datetime
-import io
-import hashlib
-from decimal import Decimal
-
 from fastapi import APIRouter, UploadFile, Depends, File, Request
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from core.tax_config import TaxConfig
+from src.core.tax_config import TaxConfig
 from src.db.session import get_db
 from src.core.deps import get_tax_config
 from src.schemas import OrderCreate, OrderOut, OrdersQuery, OrdersListOut
-from src.services.jurisdiction_service import JurisdictionService
-from src.services.orders import create_order, list_orders
-from src.services.tax_calculator import TaxCalculationService
+from src.services.list_orders import ListOrdersService
+from src.services.create_orders import CreateOrderService
 from src.services.import_orders import ImportService
 
 router = APIRouter()
@@ -26,14 +19,14 @@ async def import_orders(
         tax_config: TaxConfig = Depends(get_tax_config),
         db: AsyncSession = Depends(get_db)
 ):
-        content = await file.read()
+    content = await file.read()
 
-        return await ImportService.import_orders(
-            tax_config=tax_config,
-            db=db,
-            file_name=file.filename,
-            file_bytes=content,
-        )
+    service = ImportService(db, tax_config)
+
+    return await service.import_orders(
+        file_name=file.filename,
+        file_bytes=content,
+    )
 
 @router.post("", response_model=OrderOut)
 async def create_orders(
@@ -41,7 +34,8 @@ async def create_orders(
         tax_config: TaxConfig = Depends(get_tax_config),
         db: AsyncSession = Depends(get_db)
 ):
-    return await create_order(tax_config, db, dto)
+    service = CreateOrderService(db, tax_config)
+    return await service.create_order(dto)
 
 
 @router.get("", response_model=OrdersListOut)
@@ -49,5 +43,7 @@ async def get_orders(
         query: OrdersQuery = Depends(),
         db: AsyncSession = Depends(get_db)
 ):
-    items, total = await list_orders(db=db, limit=query.limit, offset=query.offset)
+    service = ListOrdersService(db)
+
+    items, total = await service.list_orders(limit=query.limit, offset=query.offset)
     return OrdersListOut(items=items, total=total, limit=query.limit, offset=query.offset)
