@@ -1,0 +1,33 @@
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 26px; border-bottom: 1px solid var(--border);
+  background: var(--surface); gap: 20px; flex-shrink: 0;
+}
+.topbar-left { flex-shrink: 0; }
+.topbar-title { font-family: var(--serif); font-size: 20px; font-weight: 600; color: var(--light); letter-spacing: 0.5px; line-height: 1; }
+.topbar-sub { font-size: 9px; color: var(--text-dim); letter-spacing: 2px; text-transform: uppercase; margin-top: 3px; }
+
+.stats-strip { display: flex; gap: 1px; flex: 1; justify-content: center; }
+.stat-card {
+  background: rgba(23,15,12,0.5); border: 1px solid var(--border);
+  padding: 9px 20px; text-align: center; border-radius: 2px; min-width: 120px;
+  position: relative; overflow: hidden;
+}
+.stat-card::after {
+  content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent); opacity: 0.3;
+}
+.stat-label { font-size: 8px; color: var(--text-dim); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 3px; }
+.stat-value { font-family: var(--serif); font-size: 20px; font-weight: 700; color: var(--accent); line-height: 1; }
+.stat-value.light { color: var(--light); }
+
+.topbar-actions { display: flex; gap: 8px; flex-shrink: 0; }
+.btn {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 1px;
+  padding: 9px 16px; border-radius: 2px; cursor: pointer; border: none;
+  transition: all 0.2s; display: flex; align-items: center; gap: 6px; text-transform: uppercase;
+}
+.btn-ghost { background: transparent; color: var(--text-muted); border: 1px solid var(--border); }
+.btn-ghost:hover { border-color: var(--border2); color: var(--light); }
+.btn-warm { background: rgba(57,18,19,0.8); color: var(--accent); border: 1px solid rgba(212,168,130,0.22); }
+.btn-warm:hover { background: rgba(57,18,19,1); box-shadow: 0 0 18px rgba(139,26,28,0.25); transform: translateY(-1px); }
